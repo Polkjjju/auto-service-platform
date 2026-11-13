@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: auto-service-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+      AUTO_SERVICE_DB_USER: ${AUTO_SERVICE_DB_USER}
+      AUTO_SERVICE_DB_PASSWORD: ${AUTO_SERVICE_DB_PASSWORD}
+
+      REPAIR_SERVICE_DB_USER: ${REPAIR_SERVICE_DB_USER}
+      REPAIR_SERVICE_DB_PASSWORD: ${REPAIR_SERVICE_DB_PASSWORD}
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
